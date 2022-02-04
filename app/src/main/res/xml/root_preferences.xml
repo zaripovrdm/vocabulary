@@ -1,0 +1,52 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:title="Words"
+        app:iconSpaceReserved="false">
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:defaultValue="true"
+            app:key="verb"
+            app:title="Verbs" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:defaultValue="true"
+            app:key="pverb"
+            app:title="Phrasal verbs" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:defaultValue="true"
+            app:key="noun"
+            app:title="Nouns" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:defaultValue="true"
+            app:key="idiom"
+            app:title="Idioms" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="Learned words"
+        app:iconSpaceReserved="false">
+
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            app:iconSpaceReserved="false"
+            app:defaultValue="false"
+            app:key="show_all"
+            app:title="Show learned words" />
+
+    </PreferenceCategory>
+
+
+</PreferenceScreen>
