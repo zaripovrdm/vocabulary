@@ -17,16 +17,20 @@
 
         <TextView
             android:id="@+id/word"
-            android:text="@{viewModel.word}"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="80dp"
+            android:clickable="true"
+            android:onClick="@{() -> viewModel.toggleLearned()}"
+            android:text="@{viewModel.word}"
             android:textAlignment="center"
+            android:textColor="@{context.getColor(viewModel.wordColor)}"
             android:textSize="24sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="TouchTargetSizeCheck"
             tools:text="word" />
 
         <TextView
@@ -69,15 +73,17 @@
             tools:text="example" />
 
         <Button
-            android:id="@+id/button"
-            android:layout_marginBottom="80dp"
+            android:id="@+id/next"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@{viewModel.buttonText}"
+            android:layout_marginBottom="80dp"
             android:onClick="@{() -> viewModel.next()}"
+            android:text="@{viewModel.buttonText}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>

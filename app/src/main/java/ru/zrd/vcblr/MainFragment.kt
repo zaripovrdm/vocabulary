@@ -15,6 +15,7 @@ import androidx.navigation.findNavController
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.zrd.vcblr.csv.PhrasalVerbAdapter
 import ru.zrd.vcblr.csv.VerbAdapter
 import ru.zrd.vcblr.csv.VocabularyEntryAdapter
@@ -27,12 +28,8 @@ import ru.zrd.vcblr.ui.SelectCsvFileContract
 
 class MainFragment : Fragment() {
 
-    private val db: Db by lazy {
-        Db.instance(this.requireContext())
-    }
-
     private val viewModel: VocabularyModel by viewModels {
-        VocabularyModelFactory(db)
+        VocabularyModelFactory(requireContext())
     }
 
     private var binding: FragmentMainBinding? = null // TODO lateinit
@@ -40,20 +37,13 @@ class MainFragment : Fragment() {
     private lateinit var verbLauncher: ActivityResultLauncher<Unit>
     private lateinit var phrasalVerbLauncher: ActivityResultLauncher<Unit>
 
-    private lateinit var preferences: SharedPreferences
-
-    private val preferenceListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
-        lifecycleScope.launch(Dispatchers.IO) {
-            initScreen()
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
 
         verbLauncher = createLauncher(VerbAdapter(requireActivity().application.contentResolver))
         phrasalVerbLauncher = createLauncher(PhrasalVerbAdapter(requireActivity().application.contentResolver))
+        // TODO add adapters
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -68,14 +58,6 @@ class MainFragment : Fragment() {
             viewModel = this@MainFragment.viewModel
             lifecycleOwner = viewLifecycleOwner
         }
-
-        preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            initScreen()
-        }
-
-        preferences.registerOnSharedPreferenceChangeListener(preferenceListener)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -111,47 +93,24 @@ class MainFragment : Fragment() {
         binding = null
     }
 
-    override fun onResume() {
-        super.onResume()
-        preferences.registerOnSharedPreferenceChangeListener(preferenceListener)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        preferences.unregisterOnSharedPreferenceChangeListener(preferenceListener)
-    }
-
-
     private fun createLauncher(adapter: VocabularyEntryAdapter) = registerForActivityResult(SelectCsvFileContract()) { uri ->
         if (uri == null) {
             Toast.makeText(context, "File URI is null", Toast.LENGTH_LONG).show()
         } else {
             lifecycleScope.launch(Dispatchers.IO) {
                 val entries = adapter.entries(uri)
-                lifecycleScope.launch(Dispatchers.IO) {
-                    viewModel.addEntries(entries)
-                    initScreen()
-                }
-                //Toast.makeText(context, "${entries.size} entries have been successfully added", Toast.LENGTH_LONG).show()
+                viewModel.addEntries(entries)
             }
         }
     }
 
-    private fun initScreen() {
-        val activeTypes = mutableListOf<VocabularyEntry.Type>()
-        if (preferences.getBoolean("verb", true)) {
-            activeTypes.add(VocabularyEntry.Type.VERB)
-        }
-        if (preferences.getBoolean("pverb", true)) {
-            activeTypes.add(VocabularyEntry.Type.PVERB)
-        }
-        if (preferences.getBoolean("noun", true)) {
-            activeTypes.add(VocabularyEntry.Type.NOUN)
-        }
-        if (preferences.getBoolean("idiom", true)) {
-            activeTypes.add(VocabularyEntry.Type.IDIOM)
-        }
-
-        viewModel.refresh(preferences.getBoolean("show_all", true), activeTypes)
-    }
+//    override fun onResume() {
+//        super.onResume()
+//        // TODO preferences.registerOnSharedPreferenceChangeListener
+//    }
+//
+//    override fun onPause() {
+//        super.onPause()
+//        // TODO preferences.unregisterOnSharedPreferenceChangeListener
+//    }
 }
