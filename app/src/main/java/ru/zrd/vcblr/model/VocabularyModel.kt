@@ -72,15 +72,18 @@ class VocabularyModel(private val context: Context) : ViewModel(), SharedPrefere
             db.dao().update(item)
         }
         _wordColor.value = if (item.learned) LEARNED_COLOR else DEFAULT_COLOR
+
+        if (!preferences.getBoolean("show_all", true)) {
+            items.remove(item) // always remove to avoid creating duplicates in the following if block
+            if (!item.learned) {
+                items.add(item)
+            }
+        }
     }
 
 
     fun next() = when (currentMode) {
         DisplayMode.SHOW_ALL -> {
-            if (!preferences.getBoolean("show_all", true) && item.learned) {
-                items.remove(item)
-            }
-
             item = items.random()
             currentMode = DisplayMode.nextInitMode()
 
