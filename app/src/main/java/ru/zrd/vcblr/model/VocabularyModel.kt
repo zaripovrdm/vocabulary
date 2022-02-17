@@ -30,6 +30,11 @@ class VocabularyModel(private val context: Context) : ViewModel(), SharedPrefere
         }
     }
 
+    companion object {
+        const val DEFAULT_COLOR: Int = android.R.color.secondary_text_dark
+        const val LEARNED_COLOR: Int = android.R.color.holo_purple
+    }
+
     private val db = Db.instance(context)
     private val preferences = PreferenceManager.getDefaultSharedPreferences(context)
 
@@ -53,7 +58,7 @@ class VocabularyModel(private val context: Context) : ViewModel(), SharedPrefere
     private val _buttonText = MutableLiveData<String?>()
     val buttonText: LiveData<String?> = _buttonText
 
-    private val _wordColor = MutableLiveData(android.R.color.secondary_text_dark)
+    private val _wordColor = MutableLiveData(DEFAULT_COLOR)
     val wordColor: LiveData<Int?> = _wordColor
 
     init {
@@ -66,12 +71,16 @@ class VocabularyModel(private val context: Context) : ViewModel(), SharedPrefere
         viewModelScope.launch(Dispatchers.IO) {
             db.dao().update(item)
         }
-        _wordColor.value = if (item.learned) android.R.color.holo_purple else android.R.color.secondary_text_dark
+        _wordColor.value = if (item.learned) LEARNED_COLOR else DEFAULT_COLOR
     }
 
 
     fun next() = when (currentMode) {
         DisplayMode.SHOW_ALL -> {
+            if (!preferences.getBoolean("show_all", true) && item.learned) {
+                items.remove(item)
+            }
+
             item = items.random()
             currentMode = DisplayMode.nextInitMode()
 
@@ -80,7 +89,7 @@ class VocabularyModel(private val context: Context) : ViewModel(), SharedPrefere
             _translationEng.value = null
             _example.value = null
             _buttonText.value = "Check"
-            _wordColor.value = android.R.color.secondary_text_dark
+            _wordColor.value = DEFAULT_COLOR
         }
         else -> {
             _translation.value = if (currentMode == DisplayMode.SHOW_ENG) item.translationRus else item.word
@@ -88,7 +97,7 @@ class VocabularyModel(private val context: Context) : ViewModel(), SharedPrefere
             _example.value = item.example
             _buttonText.value = "Next"
             if (item.learned) {
-                _wordColor.value = android.R.color.holo_purple
+                _wordColor.value = LEARNED_COLOR
             }
 
             currentMode = DisplayMode.SHOW_ALL
