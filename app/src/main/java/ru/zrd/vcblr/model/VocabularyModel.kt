@@ -1,14 +1,12 @@
 package ru.zrd.vcblr.model
 
+import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.util.TypedValue
 import android.widget.Toast
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import androidx.preference.PreferenceManager
 import com.google.android.material.color.MaterialColors
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +15,7 @@ import kotlinx.coroutines.withContext
 import ru.zrd.vcblr.db.Db
 import ru.zrd.vcblr.db.VocabularyEntry
 
-class VocabularyModel(private val context: Context) : ViewModel(), SharedPreferences.OnSharedPreferenceChangeListener {
+class VocabularyModel(app: Application) : AndroidViewModel(app), SharedPreferences.OnSharedPreferenceChangeListener {
 
     enum class DisplayMode {
         SHOW_RUS,
@@ -34,6 +32,8 @@ class VocabularyModel(private val context: Context) : ViewModel(), SharedPrefere
         const val DEFAULT_COLOR: Int = android.R.color.secondary_text_dark
         const val LEARNED_COLOR: Int = android.R.color.holo_purple
     }
+
+    private val context: Context = app.applicationContext
 
     private val db = Db.instance(context)
     private val preferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -117,23 +117,17 @@ class VocabularyModel(private val context: Context) : ViewModel(), SharedPrefere
         }
     }
 
+    fun resetLearned() {
+        viewModelScope.launch(Dispatchers.IO) {
+            db.dao().resetLearned(activeTypes())
+            refresh()
+        }
+    }
+
     override fun onSharedPreferenceChanged(p: SharedPreferences?, s: String?) = refresh()
 
     private fun refresh() {
-        val activeTypes = mutableListOf<VocabularyEntry.Type>().apply {
-            if (preferences.getBoolean("verb", true)) {
-                add(VocabularyEntry.Type.VERB)
-            }
-            if (preferences.getBoolean("pverb", true)) {
-                add(VocabularyEntry.Type.PVERB)
-            }
-            if (preferences.getBoolean("noun", true)) {
-                add(VocabularyEntry.Type.NOUN)
-            }
-            if (preferences.getBoolean("idiom", true)) {
-                add(VocabularyEntry.Type.IDIOM)
-            }
-        }
+        val activeTypes = activeTypes()
         val showAll = preferences.getBoolean("show_all", true)
 
         items.clear()
@@ -158,6 +152,21 @@ class VocabularyModel(private val context: Context) : ViewModel(), SharedPrefere
                     _example.value = null
                 }
             }
+        }
+    }
+
+    private fun activeTypes(): List<VocabularyEntry.Type> = mutableListOf<VocabularyEntry.Type>().apply {
+        if (preferences.getBoolean("verb", true)) {
+            add(VocabularyEntry.Type.VERB)
+        }
+        if (preferences.getBoolean("pverb", true)) {
+            add(VocabularyEntry.Type.PVERB)
+        }
+        if (preferences.getBoolean("noun", true)) {
+            add(VocabularyEntry.Type.NOUN)
+        }
+        if (preferences.getBoolean("idiom", true)) {
+            add(VocabularyEntry.Type.IDIOM)
         }
     }
 }

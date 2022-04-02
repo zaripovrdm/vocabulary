@@ -29,7 +29,7 @@ import ru.zrd.vcblr.ui.SelectCsvFileContract
 class MainFragment : Fragment() {
 
     private val viewModel: VocabularyModel by viewModels {
-        VocabularyModelFactory(requireContext())
+        VocabularyModelFactory(requireActivity().application)
     }
 
     private var binding: FragmentMainBinding? = null // TODO lateinit
@@ -78,13 +78,17 @@ class MainFragment : Fragment() {
                 requireView().findNavController().navigate(MainFragmentDirections.actionMainFragmentToSettingsFragment())
                 true
             }
+            R.id.action_unlearn_current -> {
+                viewModel.resetLearned()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     } catch (ex: ActivityNotFoundException) {
         Toast.makeText(context, "It seems you need File Manager to be installed", Toast.LENGTH_LONG).show()
         true
     } catch (ex: Exception) {
-        Toast.makeText(context, "An error has occured. ${ex::class.qualifiedName}", Toast.LENGTH_LONG).show()
+        Toast.makeText(context, "An error has occurred. ${ex::class.qualifiedName}", Toast.LENGTH_LONG).show()
         true
     }
 

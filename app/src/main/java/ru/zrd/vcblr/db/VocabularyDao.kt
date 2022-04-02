@@ -14,6 +14,9 @@ interface VocabularyDao {
     @Query("SELECT * FROM vocabulary WHERE type IN (:types)")
     fun listWithTypes(types: List<VocabularyEntry.Type>): List<VocabularyEntry>
 
+    @Query("UPDATE vocabulary SET learned = 0 WHERE type IN (:types)")
+    fun resetLearned(types: List<VocabularyEntry.Type>): Int
+
     @Query("SELECT * FROM vocabulary WHERE type IN (:types) AND learned = :learned")
     fun listWithTypes(learned: Boolean, types: List<VocabularyEntry.Type>): List<VocabularyEntry>
 

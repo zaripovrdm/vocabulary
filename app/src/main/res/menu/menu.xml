@@ -4,14 +4,22 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:icon="@drawable/ic_baseline_add_circle_24"
+        android:icon="@drawable/ic_baseline_menu_24"
         android:title="Add"
         app:showAsAction="ifRoom">
         <menu>
-            <item android:id="@+id/action_add_verb"
+            <item
+                android:id="@+id/action_add_verb"
+                android:icon="@drawable/ic_baseline_add_circle_24"
                 android:title="Verbs" />
-            <item android:id="@+id/action_add_pverb"
+            <item
+                android:id="@+id/action_add_pverb"
+                android:icon="@drawable/ic_baseline_add_circle_24"
                 android:title="Phrasal verbs" />
+            <item
+                android:id="@+id/action_unlearn_current"
+                android:icon="@drawable/ic_baseline_check_box_outline_blank_24"
+                android:title="Unlearn current" />
         </menu>
     </item>
 
