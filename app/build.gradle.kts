@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    compileSdk = 32
+    compileSdk = 33
     defaultConfig {
         applicationId = "ru.zrd.vcblr"
-        minSdk = 31
-        targetSdk = 32
+        minSdk = 32
+        targetSdk = 33
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -24,24 +24,29 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
 
     buildFeatures {
         dataBinding = true
     }
+    namespace = "ru.zrd.vcblr"
+}
+
+kotlin {
+    jvmToolchain(11)
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.7.0")
-    implementation("androidx.appcompat:appcompat:1.4.1")
-    implementation("com.google.android.material:material:1.5.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.3")
+    implementation("androidx.core:core-ktx:1.10.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.8.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     //implementation("androidx.legacy:legacy-support-v4:1.0.0")
 
     // csv parser
@@ -51,17 +56,17 @@ dependencies {
     implementation("androidx.preference:preference:1.2.0")
 
     // navigation + androidx.fragment.app.viewModels function
-    implementation("androidx.navigation:navigation-fragment-ktx:2.4.0")
+    implementation("androidx.navigation:navigation-fragment-ktx:2.5.3")
     // navigation
-    implementation("androidx.navigation:navigation-ui-ktx:2.4.0")
+    implementation("androidx.navigation:navigation-ui-ktx:2.5.3")
 
     // app database api
-    implementation("androidx.room:room-runtime:2.4.1")
-    implementation("androidx.room:room-ktx:2.4.1") // Kotlin Extensions and Coroutines support for Room
-    kapt("androidx.room:room-compiler:2.4.1") // use Kotlin annotation processing tool (kapt)
+    implementation("androidx.room:room-runtime:2.5.1")
+    implementation("androidx.room:room-ktx:2.5.1") // Kotlin Extensions and Coroutines support for Room
+    kapt("androidx.room:room-compiler:2.5.1") // use Kotlin annotation processing tool (kapt)
 
     testImplementation ("junit:junit:4.13.2")
 
-    androidTestImplementation ("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation ("androidx.test.espresso:espresso-core:3.4.0")
+    androidTestImplementation ("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation ("androidx.test.espresso:espresso-core:3.5.1")
 }

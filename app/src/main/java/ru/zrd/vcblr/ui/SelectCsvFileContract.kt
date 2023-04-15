@@ -10,7 +10,7 @@ import androidx.activity.result.contract.ActivityResultContract
 
 class SelectCsvFileContract : ActivityResultContract<Unit, Uri?>() {
 
-    override fun createIntent(context: Context, input: Unit?) = Intent(Intent.ACTION_GET_CONTENT).apply {
+    override fun createIntent(context: Context, input: Unit) = Intent(Intent.ACTION_GET_CONTENT).apply {
         addCategory(Intent.CATEGORY_OPENABLE)
         type = "*/*"
     }
