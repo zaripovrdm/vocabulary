@@ -8,7 +8,7 @@ class PhrasalVerbAdapter(resolver: ContentResolver) : VocabularyEntryAdapter(res
     override fun convert(line: List<String?>): List<VocabularyEntry> = listOf(
         VocabularyEntry(
             word = if (line[0].isNullOrBlank()) "" else line[0]!!,
-            translationRus = line[1]!!,
+            translation = line[1]!!,
             example = line[3],
             type = VocabularyEntry.Type.PVERB
         )

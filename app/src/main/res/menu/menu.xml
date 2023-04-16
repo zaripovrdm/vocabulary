@@ -9,6 +9,10 @@
         app:showAsAction="ifRoom">
         <menu>
             <item
+                android:id="@+id/action_add_misc"
+                android:icon="@drawable/ic_baseline_add_circle_24"
+                android:title="Misc" />
+            <item
                 android:id="@+id/action_add_verb"
                 android:icon="@drawable/ic_baseline_add_circle_24"
                 android:title="Verbs" />

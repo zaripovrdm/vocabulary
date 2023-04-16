@@ -3,28 +3,28 @@ package ru.zrd.vcblr.model
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
-import android.graphics.Color
-import android.util.TypedValue
 import android.widget.Toast
 import androidx.lifecycle.*
 import androidx.preference.PreferenceManager
-import com.google.android.material.color.MaterialColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.zrd.vcblr.db.Db
 import ru.zrd.vcblr.db.VocabularyEntry
+import kotlin.random.Random
 
 class VocabularyModel(app: Application) : AndroidViewModel(app), SharedPreferences.OnSharedPreferenceChangeListener {
 
     enum class DisplayMode {
-        SHOW_RUS,
-        SHOW_ENG,
-        SHOW_ALL;
+        // first step - word is displayed either in original or translated form
+        TRANSLATION,
+        WORD,
+        // second step - show both translation and original word
+        ALL;
 
         companion object {
-            private val optionList = listOf(SHOW_RUS, SHOW_ENG)
-            fun nextInitMode() = optionList.random()
+            private val optionList = listOf(TRANSLATION, WORD)
+            fun nextRandomInitMode() = optionList[(System.currentTimeMillis() % 2).toInt()]
         }
     }
 
@@ -38,10 +38,12 @@ class VocabularyModel(app: Application) : AndroidViewModel(app), SharedPreferenc
     private val db = Db.instance(context)
     private val preferences = PreferenceManager.getDefaultSharedPreferences(context)
 
-    private var currentMode = DisplayMode.nextInitMode()
 
     private val items = mutableListOf<VocabularyEntry>()
     private lateinit var item: VocabularyEntry
+
+    private var currentDisplayMode: DisplayMode = DisplayMode.ALL
+    private var initDisplayMode: DisplayMode? = null
 
     private val _word = MutableLiveData<String>()
     val word: LiveData<String> = _word
@@ -49,8 +51,8 @@ class VocabularyModel(app: Application) : AndroidViewModel(app), SharedPreferenc
     private val _translation = MutableLiveData<String?>()
     val translation: LiveData<String?> = _translation
 
-    private val _translationEng = MutableLiveData<String?>()
-    val translationEng: LiveData<String?> = _translationEng
+    private val _description = MutableLiveData<String?>()
+    val description: LiveData<String?> = _description
 
     private val _example = MutableLiveData<String?>()
     val example: LiveData<String?> = _example
@@ -60,6 +62,12 @@ class VocabularyModel(app: Application) : AndroidViewModel(app), SharedPreferenc
 
     private val _wordColor = MutableLiveData(DEFAULT_COLOR)
     val wordColor: LiveData<Int?> = _wordColor
+
+    private val _direction = MutableLiveData<String?>()
+    val direction: LiveData<String?> = _direction
+
+    private val _type = MutableLiveData<String?>()
+    val type: LiveData<String?> = _type
 
     init {
         preferences.registerOnSharedPreferenceChangeListener(this)
@@ -81,29 +89,36 @@ class VocabularyModel(app: Application) : AndroidViewModel(app), SharedPreferenc
         }
     }
 
+    fun next() = when (currentDisplayMode) {
+        DisplayMode.ALL -> {
+            item = items[(System.currentTimeMillis() % items.size).toInt()]
+            currentDisplayMode = initDisplayMode ?: DisplayMode.nextRandomInitMode()
 
-    fun next() = when (currentMode) {
-        DisplayMode.SHOW_ALL -> {
-            item = items.random()
-            currentMode = DisplayMode.nextInitMode()
+            if (currentDisplayMode == DisplayMode.WORD) {
+                _word.value = item.word
+                _direction.value = "${item.lang} \u27a1"
+            } else {
+                _word.value = item.translation
+                _direction.value = "\u27a1 ${item.lang}"
+            }
 
-            _word.value = if (currentMode == DisplayMode.SHOW_ENG) item.word else item.translationRus
+            _type.value = item.type.name.lowercase()
             _translation.value = null
-            _translationEng.value = null
+            _description.value = null
             _example.value = null
             _buttonText.value = "Check"
             _wordColor.value = DEFAULT_COLOR
         }
         else -> {
-            _translation.value = if (currentMode == DisplayMode.SHOW_ENG) item.translationRus else item.word
-            _translationEng.value = item.translationEng
+            _translation.value = if (currentDisplayMode == DisplayMode.WORD) item.translation else item.word
+            _description.value = item.description
             _example.value = item.example
             _buttonText.value = "Next"
             if (item.learned) {
                 _wordColor.value = LEARNED_COLOR
             }
 
-            currentMode = DisplayMode.SHOW_ALL
+            currentDisplayMode = DisplayMode.ALL
         }
     }
 
@@ -119,7 +134,7 @@ class VocabularyModel(app: Application) : AndroidViewModel(app), SharedPreferenc
 
     fun resetLearned() {
         viewModelScope.launch(Dispatchers.IO) {
-            db.dao().resetLearned(activeTypes())
+            db.dao().resetLearned(activeTypes(), activeLanguages())
             refresh()
         }
     }
@@ -128,27 +143,40 @@ class VocabularyModel(app: Application) : AndroidViewModel(app), SharedPreferenc
 
     private fun refresh() {
         val activeTypes = activeTypes()
+        val activeLanguages = activeLanguages()
         val showAll = preferences.getBoolean("show_all", true)
 
+        // set up display modes
+        val allowedDisplayModes = mutableListOf<DisplayMode>().apply {
+            if (preferences.getBoolean("translation_direct", true)) {
+                add(DisplayMode.WORD)
+            }
+            if (preferences.getBoolean("translation_reverse", true)) {
+                add(DisplayMode.TRANSLATION)
+            }
+        }
+        initDisplayMode = if (allowedDisplayModes.size == 1) allowedDisplayModes[0] else null
+
+        // set up valid items
         items.clear()
         viewModelScope.launch(Dispatchers.IO) {
             items.addAll(
                 if (showAll) {
-                    db.dao().listWithTypes(activeTypes)
+                    db.dao().listWithTypes(activeTypes, activeLanguages)
                 } else {
-                    db.dao().listWithTypes(false, activeTypes)
+                    db.dao().listWithTypes(false, activeTypes, activeLanguages)
                 }
             )
 
             withContext(Dispatchers.Main) {
                 if (items.isNotEmpty()) {
-                    currentMode = DisplayMode.SHOW_ALL
+                    currentDisplayMode = DisplayMode.ALL
                     next()
                 } else {
                     // TODO add special screen or disable button
                     _word.value = if (activeTypes.isEmpty()) "ENABLE AT LEAST ONE WORD TYPE" else  "LOAD WORDS USING + MENU BUTTON"
                     _translation.value = null
-                    _translationEng.value = null
+                    _description.value = null
                     _example.value = null
                 }
             }
@@ -165,8 +193,26 @@ class VocabularyModel(app: Application) : AndroidViewModel(app), SharedPreferenc
         if (preferences.getBoolean("noun", true)) {
             add(VocabularyEntry.Type.NOUN)
         }
+        if (preferences.getBoolean("adjective", true)) {
+            add(VocabularyEntry.Type.ADJECTIVE)
+        }
+        if (preferences.getBoolean("adverb", true)) {
+            add(VocabularyEntry.Type.ADVERB)
+        }
         if (preferences.getBoolean("idiom", true)) {
             add(VocabularyEntry.Type.IDIOM)
+        }
+        if (preferences.getBoolean("miscellaneous", true)) {
+            add(VocabularyEntry.Type.MISC)
+        }
+    }
+
+    private fun activeLanguages(): List<VocabularyEntry.Lang> = mutableListOf<VocabularyEntry.Lang>().apply {
+        if (preferences.getBoolean("en", true)) {
+            add(VocabularyEntry.Lang.EN)
+        }
+        if (preferences.getBoolean("fr", true)) {
+            add(VocabularyEntry.Lang.FR)
         }
     }
 }

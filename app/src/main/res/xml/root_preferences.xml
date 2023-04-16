@@ -30,9 +30,69 @@
             android:defaultValue="true"
             app:iconSpaceReserved="false"
             app:defaultValue="true"
+            app:key="adjective"
+            app:title="Adjectives" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:defaultValue="true"
+            app:key="adverb"
+            app:title="Adverbs" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:defaultValue="true"
             app:key="idiom"
             app:title="Idioms" />
 
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:defaultValue="true"
+            app:key="miscellaneous"
+            app:title="Miscellaneous" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="Languages"
+        app:iconSpaceReserved="false">
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:defaultValue="true"
+            app:key="en"
+            app:title="English" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:defaultValue="true"
+            app:key="fr"
+            app:title="French" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="Translation direction"
+        app:iconSpaceReserved="false">
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:defaultValue="false"
+            app:key="translation_direct"
+            app:title="Word \u279e translation" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:defaultValue="true"
+            app:key="translation_reverse"
+            app:title="Translation \u279e word" />
     </PreferenceCategory>
 
     <PreferenceCategory
